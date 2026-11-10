@@ -1,4 +1,4 @@
-a@extends('layouts.app', ['title' => 'Daftar Akun Baru'])
+@extends('layouts.app', ['title' => 'Daftar Akun Baru'])
 
 @section('content')
 <div class="max-w-md mx-auto my-10 bg-white p-8 rounded-2xl shadow-sm border border-slate-200">

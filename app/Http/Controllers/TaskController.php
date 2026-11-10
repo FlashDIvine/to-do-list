@@ -55,7 +55,13 @@ class TaskController extends Controller
             'priority' => 'required|in:low,medium,high',
             'due_date' => 'nullable|date',
             'category_id' => 'required|exists:categories,id',
+            'progress' => 'nullable|integer|min:0|max:100',
         ]);
+
+        // REASONING UKK: Menentukan status selesai jika progres awal diset 100%
+        if (isset($validated['progress']) && $validated['progress'] >= 100) {
+            $validated['is_completed'] = true;
+        }
 
         // REASONING UKK: Simpan mass-assignment HANYA melalui relasi user; otomatis menginjeksi user_id dari sesi login dan mencegah manipulasi ID dari client-side
         auth()->user()->tasks()->create($validated);
@@ -71,9 +77,12 @@ class TaskController extends Controller
         // REASONING UKK: Anti-IDOR (Insecure Direct Object Reference) memastikan task milik user aktif, otomatis melempar HTTP 404 jika task milik user lain
         $task = auth()->user()->tasks()->findOrFail($id);
 
-        // REASONING UKK: Operator negasi (!) membalik nilai boolean secara atomik (true menjadi false, false menjadi true)
+        $newCompleted = !$task->is_completed;
+
+        // REASONING UKK: Operator negasi (!) membalik nilai boolean dan sinkronkan progres (100 jika selesai, 0 jika belum)
         $task->update([
-            'is_completed' => !$task->is_completed,
+            'is_completed' => $newCompleted,
+            'progress' => $newCompleted ? 100 : 0,
         ]);
 
         return redirect()->back()->with('success', 'Status tugas berhasil diperbarui!');
@@ -91,7 +100,12 @@ class TaskController extends Controller
             'priority' => 'required|in:low,medium,high',
             'due_date' => 'nullable|date',
             'category_id' => 'required|exists:categories,id',
+            'progress' => 'nullable|integer|min:0|max:100',
         ]);
+
+        if (isset($validated['progress'])) {
+            $validated['is_completed'] = ($validated['progress'] >= 100);
+        }
 
         // REASONING UKK: Anti-IDOR mengunci akses pembaruan hanya untuk pemilik sah data task
         $task = auth()->user()->tasks()->findOrFail($id);
@@ -100,6 +114,41 @@ class TaskController extends Controller
         $task->update($validated);
 
         return redirect()->route('tasks.index')->with('success', 'Tugas berhasil diperbarui!');
+    }
+
+    /**
+     * Perbarui nilai slider progres tugas (0 - 100%).
+     * Jika digeser mentok kanan (100%), tugas otomatis ditandai selesai.
+     */
+    public function updateProgress(Request $request, $id)
+    {
+        // REASONING UKK: Validasi rentang nilai slider dari 0 hingga 100 integer
+        $validated = $request->validate([
+            'progress' => 'required|integer|min:0|max:100',
+        ]);
+
+        // REASONING UKK: Anti-IDOR memastikan slider hanya dapat digeser oleh pemilik sah data task
+        $task = auth()->user()->tasks()->findOrFail($id);
+
+        // REASONING UKK: Jika slider mentok kanan (100%), status is_completed otomatis menjadi true (selesai)
+        $isCompleted = ($validated['progress'] >= 100);
+
+        $task->update([
+            'progress' => $validated['progress'],
+            'is_completed' => $isCompleted,
+        ]);
+
+        // REASONING UKK: Jika dipanggil melalui AJAX / Fetch API, kembalikan respons JSON agar antarmuka responsif tanpa reload
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'progress' => $task->progress,
+                'is_completed' => $task->is_completed,
+                'message' => $isCompleted ? 'Tugas selesai! (100%)' : 'Progres tugas diperbarui (' . $task->progress . '%)',
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Progres tugas berhasil diperbarui!');
     }
 
     /**

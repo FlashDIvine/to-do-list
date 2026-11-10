@@ -12,13 +12,13 @@
 
         <!-- REASONING UKK: Menampilkan ringkasan status tugas untuk memberikan visual feedback cepat bagi penguji/pengguna -->
         <div class="flex items-center space-x-2">
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-slate-200 text-slate-700">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-slate-200 text-slate-700" id="stat-total">
                 Total: {{ $tasks->count() }}
             </span>
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700" id="stat-completed">
                 Selesai: {{ $tasks->where('is_completed', true)->count() }}
             </span>
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700" id="stat-pending">
                 Tertunda: {{ $tasks->where('is_completed', false)->count() }}
             </span>
         </div>
@@ -172,96 +172,128 @@
     <!-- 3. Daftar Tugas (Task Cards / Rows) -->
     <div class="space-y-3">
         @forelse ($tasks as $task)
-            <div class="bg-white rounded-2xl border {{ $task->is_completed ? 'border-slate-200 bg-slate-50/50' : 'border-slate-200 hover:border-indigo-200' }} p-4 sm:p-5 transition duration-150 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div id="task-card-{{ $task->id }}" class="bg-white rounded-2xl border {{ $task->is_completed ? 'border-slate-200 bg-slate-50/50' : 'border-slate-200 hover:border-indigo-200' }} p-4 sm:p-5 transition duration-150 shadow-sm flex flex-col gap-4">
 
-                <!-- Sisi Kiri: Checkbox, Judul, Kategori & Due Date -->
-                <div class="flex items-start space-x-3.5 flex-1 min-w-0">
-                    <!-- REASONING UKK: Form PATCH otomatis terkirim saat checkbox di-klik menggunakan JavaScript onchange="this.form.submit()" -->
-                    <form action="{{ route('tasks.toggle', $task->id) }}" method="POST" class="mt-1 flex-shrink-0">
-                        @csrf
-                        <!-- REASONING UKK: Method spoofing PATCH untuk operasi pembaruan parsial status boolean task -->
-                        @method('PATCH')
-                        <input type="checkbox" onchange="this.form.submit()" {{ $task->is_completed ? 'checked' : '' }}
-                            class="w-5 h-5 text-indigo-600 rounded-lg border-slate-300 focus:ring-indigo-500 cursor-pointer transition">
-                    </form>
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <!-- Sisi Kiri: Checkbox, Judul, Kategori & Due Date -->
+                    <div class="flex items-start space-x-3.5 flex-1 min-w-0">
+                        <!-- REASONING UKK: Form PATCH otomatis terkirim saat checkbox di-klik menggunakan JavaScript onchange="this.form.submit()" -->
+                        <form action="{{ route('tasks.toggle', $task->id) }}" method="POST" class="mt-1 flex-shrink-0">
+                            @csrf
+                            <!-- REASONING UKK: Method spoofing PATCH untuk operasi pembaruan parsial status boolean task -->
+                            @method('PATCH')
+                            <input type="checkbox" id="checkbox-{{ $task->id }}" onchange="this.form.submit()" {{ $task->is_completed ? 'checked' : '' }}
+                                class="w-5 h-5 text-indigo-600 rounded-lg border-slate-300 focus:ring-indigo-500 cursor-pointer transition">
+                        </form>
 
-                    <div class="flex-1 min-w-0">
-                        <!-- Judul Tugas -->
-                        <div class="flex items-center space-x-2">
-                            <h3 class="text-base {{ $task->is_completed ? 'line-through text-slate-400 font-medium' : 'text-slate-800 font-bold' }} truncate">
-                                {{ $task->title }}
-                            </h3>
+                        <div class="flex-1 min-w-0">
+                            <!-- Judul Tugas -->
+                            <div class="flex items-center space-x-2">
+                                <h3 id="task-title-{{ $task->id }}" class="text-base {{ $task->is_completed ? 'line-through text-slate-400 font-medium' : 'text-slate-800 font-bold' }} truncate">
+                                    {{ $task->title }}
+                                </h3>
+                            </div>
+
+                            <!-- Deskripsi jika ada -->
+                            @if ($task->description)
+                                <p id="task-desc-{{ $task->id }}" class="text-xs {{ $task->is_completed ? 'line-through text-slate-300' : 'text-slate-500' }} mt-1 line-clamp-2">
+                                    {{ $task->description }}
+                                </p>
+                            @endif
+
+                            <!-- Metadata Badges: Kategori, Prioritas, dan Tenggat Waktu -->
+                            <div class="flex flex-wrap items-center gap-2 mt-2.5">
+                                <!-- Badge Kategori -->
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                    📁 {{ $task->category->name }}
+                                </span>
+
+                                <!-- REASONING UKK: Indikator visual bobot prioritas (Merah = High, Kuning = Medium, Abu-abu = Low) -->
+                                @if ($task->priority === 'high')
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-bold bg-red-100 text-red-700 border border-red-200">
+                                        🔥 High Priority
+                                    </span>
+                                @elseif ($task->priority === 'medium')
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-bold bg-amber-100 text-amber-700 border border-amber-200">
+                                        ⚡ Medium Priority
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                                        🌱 Low Priority
+                                    </span>
+                                @endif
+
+                                <!-- Tenggat Waktu (Due Date) -->
+                                @if ($task->due_date)
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium {{ !$task->is_completed && $task->due_date->isPast() ? 'bg-rose-50 text-rose-600 border border-rose-200 font-semibold' : 'bg-slate-100 text-slate-600' }}">
+                                        📅 {{ $task->due_date->format('d M Y') }}
+                                        @if (!$task->is_completed && $task->due_date->isPast())
+                                            (Terlewat)
+                                        @endif
+                                    </span>
+                                @endif
+                            </div>
                         </div>
+                    </div>
 
-                        <!-- Deskripsi jika ada -->
-                        @if ($task->description)
-                            <p class="text-xs {{ $task->is_completed ? 'line-through text-slate-300' : 'text-slate-500' }} mt-1 line-clamp-2">
-                                {{ $task->description }}
-                            </p>
-                        @endif
+                    <!-- Sisi Kanan: Tombol Edit & Tombol Hapus -->
+                    <div class="flex items-center space-x-2 self-end sm:self-center flex-shrink-0">
+                        <!-- Tombol Edit Modal -->
+                        <button type="button"
+                            onclick="openEditModal({{ json_encode($task) }})"
+                            class="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition duration-150 border border-slate-200"
+                            title="Ubah Tugas">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                            </svg>
+                        </button>
 
-                        <!-- Metadata Badges: Kategori, Prioritas, dan Tenggat Waktu -->
-                        <div class="flex flex-wrap items-center gap-2 mt-2.5">
-                            <!-- Badge Kategori -->
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
-                                📁 {{ $task->category->name }}
-                            </span>
+                        <!-- Form Delete dengan Alert Konfirmasi -->
+                        <!-- REASONING UKK: onsubmit return confirm() mencegah ketidaksengajaan penghapusan data secara interaktif di browser -->
+                        <form action="{{ route('tasks.destroy', $task->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus tugas ini?');">
+                            @csrf
+                            <!-- REASONING UKK: Method spoofing DELETE untuk operasi hapus resource sesuai standar RESTful -->
+                            @method('DELETE')
+                            <button type="submit"
+                                class="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition duration-150 border border-slate-200"
+                                title="Hapus Tugas">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </form>
+                    </div>
+                </div>
 
-                            <!-- REASONING UKK: Indikator visual bobot prioritas (Merah = High, Kuning = Medium, Abu-abu = Low) -->
-                            @if ($task->priority === 'high')
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-bold bg-red-100 text-red-700 border border-red-200">
-                                    🔥 High Priority
-                                </span>
-                            @elseif ($task->priority === 'medium')
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-bold bg-amber-100 text-amber-700 border border-amber-200">
-                                    ⚡ Medium Priority
-                                </span>
-                            @else
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
-                                    🌱 Low Priority
-                                </span>
-                            @endif
+                <!-- REASONING UKK: Slider Progres Metalik Sesuai Gambar (Geser Mentok Kanan = Tugas Selesai) -->
+                <div class="pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="flex items-center space-x-2 text-xs">
+                        <span class="font-bold text-slate-700">Tingkat Progres:</span>
+                        <span id="progress-badge-{{ $task->id }}" class="font-bold px-2 py-0.5 rounded-md border text-xs {{ $task->is_completed ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-slate-100 text-slate-700 border-slate-200' }}">
+                            {{ $task->progress ?? ($task->is_completed ? 100 : 0) }}%
+                        </span>
+                        <span id="progress-label-{{ $task->id }}" class="text-[11px] font-semibold {{ $task->is_completed ? 'text-emerald-600' : 'text-slate-400' }}">
+                            {{ $task->is_completed ? '✓ Selesai' : 'Geser mentok ke kanan untuk menyelesaikan' }}
+                        </span>
+                    </div>
 
-                            <!-- Tenggat Waktu (Due Date) -->
-                            @if ($task->due_date)
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium {{ !$task->is_completed && $task->due_date->isPast() ? 'bg-rose-50 text-rose-600 border border-rose-200 font-semibold' : 'bg-slate-100 text-slate-600' }}">
-                                    📅 {{ $task->due_date->format('d M Y') }}
-                                    @if (!$task->is_completed && $task->due_date->isPast())
-                                        (Terlewat)
-                                    @endif
-                                </span>
-                            @endif
+                    <div class="w-full sm:w-72">
+                        <div class="metallic-track-wrapper flex items-center space-x-2">
+                            <span class="text-[10px] font-bold text-slate-500 pl-1 select-none">0%</span>
+                            <div class="flex-1 relative flex items-center">
+                                <input type="range" min="0" max="100" step="1"
+                                    id="slider-{{ $task->id }}"
+                                    value="{{ $task->progress ?? ($task->is_completed ? 100 : 0) }}"
+                                    oninput="onSliderLiveChange({{ $task->id }}, this.value)"
+                                    onchange="onSliderCommit({{ $task->id }}, this.value)"
+                                    class="metallic-slider"
+                                    title="Geser mentok kanan (100%) untuk menyelesaikan tugas">
+                            </div>
+                            <span class="text-[10px] font-bold text-slate-500 pr-1 select-none">100%</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Sisi Kanan: Tombol Edit & Tombol Hapus -->
-                <div class="flex items-center space-x-2 self-end sm:self-center flex-shrink-0">
-                    <!-- Tombol Edit Modal -->
-                    <button type="button"
-                        onclick="openEditModal({{ json_encode($task) }})"
-                        class="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition duration-150 border border-slate-200"
-                        title="Ubah Tugas">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                        </svg>
-                    </button>
-
-                    <!-- Form Delete dengan Alert Konfirmasi -->
-                    <!-- REASONING UKK: onsubmit return confirm() mencegah ketidaksengajaan penghapusan data secara interaktif di browser -->
-                    <form action="{{ route('tasks.destroy', $task->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus tugas ini?');">
-                        @csrf
-                        <!-- REASONING UKK: Method spoofing DELETE untuk operasi hapus resource sesuai standar RESTful -->
-                        @method('DELETE')
-                        <button type="submit"
-                            class="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition duration-150 border border-slate-200"
-                            title="Hapus Tugas">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                        </button>
-                    </form>
-                </div>
             </div>
         @empty
             <!-- Tampilan Kosong (Empty State) -->
@@ -343,6 +375,21 @@
             </div>
 
             <div>
+                <div class="flex items-center justify-between mb-1">
+                    <label for="edit_progress" class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                        Progres Penyelesaian
+                    </label>
+                    <span id="edit_progress_val" class="text-xs font-extrabold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200">
+                        0%
+                    </span>
+                </div>
+                <input type="range" name="progress" id="edit_progress" min="0" max="100" step="1"
+                    oninput="document.getElementById('edit_progress_val').innerText = this.value + '%'"
+                    class="w-full accent-indigo-600 cursor-pointer">
+                <span class="text-[11px] text-slate-400">Jika diset 100%, tugas otomatis ditandai selesai.</span>
+            </div>
+
+            <div>
                 <label for="edit_description" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
                     Deskripsi / Catatan Tambahan
                 </label>
@@ -366,6 +413,91 @@
 
 @push('scripts')
 <script>
+    // REASONING UKK: Live feedback visual saat slider progres digeser (tanpa menunggu request database)
+    function onSliderLiveChange(taskId, value) {
+        const badge = document.getElementById(`progress-badge-${taskId}`);
+        const label = document.getElementById(`progress-label-${taskId}`);
+        const title = document.getElementById(`task-title-${taskId}`);
+        const desc = document.getElementById(`task-desc-${taskId}`);
+        const checkbox = document.getElementById(`checkbox-${taskId}`);
+        const card = document.getElementById(`task-card-${taskId}`);
+
+        if (badge) badge.innerText = `${value}%`;
+
+        // REASONING UKK: Mentok kanan (100%) otomatis mengaktifkan status selesai (line-through dan badge hijau)
+        if (parseInt(value) >= 100) {
+            if (badge) badge.className = "font-bold px-2 py-0.5 rounded-md border text-xs bg-emerald-100 text-emerald-800 border-emerald-300";
+            if (label) {
+                label.className = "text-[11px] font-semibold text-emerald-600";
+                label.innerText = "✓ Selesai";
+            }
+            if (title) title.className = "text-base line-through text-slate-400 font-medium truncate";
+            if (desc) desc.className = "text-xs line-through text-slate-300 mt-1 line-clamp-2";
+            if (checkbox) checkbox.checked = true;
+            if (card) {
+                card.classList.remove('hover:border-indigo-200');
+                card.classList.add('bg-slate-50/50');
+            }
+        } else {
+            if (badge) badge.className = "font-bold px-2 py-0.5 rounded-md border text-xs bg-slate-100 text-slate-700 border-slate-200";
+            if (label) {
+                label.className = "text-[11px] font-semibold text-slate-400";
+                label.innerText = "Geser mentok ke kanan untuk menyelesaikan";
+            }
+            if (title) title.className = "text-base text-slate-800 font-bold truncate";
+            if (desc) desc.className = "text-xs text-slate-500 mt-1 line-clamp-2";
+            if (checkbox) checkbox.checked = false;
+            if (card) {
+                card.classList.remove('bg-slate-50/50');
+                card.classList.add('hover:border-indigo-200');
+            }
+        }
+    }
+
+    // REASONING UKK: Eksekusi AJAX (Fetch API) saat slider dilepas untuk menyimpan nilai progres ke SQLite
+    async function onSliderCommit(taskId, value) {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        try {
+            const response = await fetch(`/tasks/${taskId}/progress`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({ progress: parseInt(value) })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                recalculateCounters();
+            }
+        } catch (error) {
+            console.error('Gagal memperbarui progres:', error);
+        }
+    }
+
+    // REASONING UKK: Hitung ulang indikator total selesai / tertunda secara dinamis di browser
+    function recalculateCounters() {
+        let completed = 0;
+        let pending = 0;
+        const sliders = document.querySelectorAll('.metallic-slider');
+
+        sliders.forEach(slider => {
+            if (parseInt(slider.value) >= 100) {
+                completed++;
+            } else {
+                pending++;
+            }
+        });
+
+        const statComp = document.getElementById('stat-completed');
+        const statPend = document.getElementById('stat-pending');
+        if (statComp) statComp.innerText = `Selesai: ${completed}`;
+        if (statPend) statPend.innerText = `Tertunda: ${pending}`;
+    }
+
     // REASONING UKK: Fungsi JavaScript murni tanpa dependency untuk mengisi value ke dalam modal edit
     function openEditModal(task) {
         const form = document.getElementById('editTaskForm');
@@ -377,6 +509,11 @@
         document.getElementById('edit_priority').value = task.priority;
         document.getElementById('edit_description').value = task.description || '';
         
+        // Atur nilai slider progres di dalam modal
+        const currentProgress = task.progress !== undefined && task.progress !== null ? task.progress : (task.is_completed ? 100 : 0);
+        document.getElementById('edit_progress').value = currentProgress;
+        document.getElementById('edit_progress_val').innerText = currentProgress + '%';
+
         // Format tanggal YYYY-MM-DD untuk input date HTML5
         if (task.due_date) {
             const dateStr = task.due_date.substring(0, 10);

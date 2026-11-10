@@ -22,6 +22,7 @@ class Task extends Model
         'description',
         'priority',
         'due_date',
+        'progress',
         'is_completed',
     ];
 
@@ -30,9 +31,10 @@ class Task extends Model
      *
      * @var array<string, string>
      */
-    // REASONING UKK: Type casting otomatis mengubah nilai database ke tipe data native PHP (boolean murni dan Carbon date instance)
+    // REASONING UKK: Type casting otomatis mengubah nilai database ke tipe data native PHP (boolean murni, integer, dan Carbon date instance)
     protected $casts = [
         'is_completed' => 'boolean',
+        'progress' => 'integer',
         'due_date' => 'date',
     ];
 

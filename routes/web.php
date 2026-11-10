@@ -32,6 +32,8 @@ Route::middleware('auth')->group(function () {
     Route::put('/tasks/{id}', [TaskController::class, 'update'])->name('tasks.update');
     // REASONING UKK: Menggunakan metode HTTP PATCH karena hanya mengubah status parsial satu atribut (is_completed)
     Route::patch('/tasks/{id}/toggle', [TaskController::class, 'toggle'])->name('tasks.toggle');
+    // REASONING UKK: Rute PATCH untuk mengupdate slider progres tugas (0-100%) dan auto-selesai jika mentok kanan (100%)
+    Route::patch('/tasks/{id}/progress', [TaskController::class, 'updateProgress'])->name('tasks.progress');
     Route::delete('/tasks/{id}', [TaskController::class, 'destroy'])->name('tasks.destroy');
 });
 

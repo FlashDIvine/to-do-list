@@ -25,6 +25,8 @@ return new class extends Migration
             $table->enum('priority', ['low', 'medium', 'high'])->default('medium');
             // REASONING UKK: Tenggat waktu tugas bersifat opsional (nullable) bertipe date
             $table->date('due_date')->nullable();
+            // REASONING UKK: Kolom progress (0 - 100) untuk menentukan persentase penyelesaian tugas
+            $table->unsignedTinyInteger('progress')->default(0);
             // REASONING UKK: Status penyelesaian tugas default bernilai false (belum selesai)
             $table->boolean('is_completed')->default(false);
             $table->timestamps();

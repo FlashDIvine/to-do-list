@@ -111,5 +111,67 @@ class TaskTest extends TestCase
             'priority' => 'high',
         ]);
     }
+
+    /**
+     * Uji coba: Slider progres dapat diperbarui dan jika mencapai 100% otomatis selesai.
+     */
+    public function test_user_can_update_task_progress_and_auto_complete_at_100(): void
+    {
+        $user = User::factory()->create();
+        $category = Category::first();
+
+        $task = Task::create([
+            'user_id' => $user->id,
+            'category_id' => $category->id,
+            'title' => 'Tugas dengan Slider',
+            'priority' => 'medium',
+            'progress' => 30,
+            'is_completed' => false,
+        ]);
+
+        // Geser ke 75%
+        $response = $this->actingAs($user)->patchJson(route('tasks.progress', $task->id), [
+            'progress' => 75,
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertEquals(75, $task->fresh()->progress);
+        $this->assertFalse($task->fresh()->is_completed);
+
+        // Geser mentok kanan (100%) -> harus otomatis selesai
+        $response100 = $this->actingAs($user)->patchJson(route('tasks.progress', $task->id), [
+            'progress' => 100,
+        ]);
+
+        $response100->assertStatus(200);
+        $this->assertEquals(100, $task->fresh()->progress);
+        $this->assertTrue($task->fresh()->is_completed);
+    }
+
+    /**
+     * Uji coba: Proteksi Anti-IDOR pada slider progres tugas milik orang lain.
+     */
+    public function test_user_cannot_update_progress_of_other_users_task_anti_idor(): void
+    {
+        $userA = User::factory()->create();
+        $userB = User::factory()->create();
+        $category = Category::first();
+
+        $taskB = Task::create([
+            'user_id' => $userB->id,
+            'category_id' => $category->id,
+            'title' => 'Tugas User B',
+            'priority' => 'low',
+            'progress' => 10,
+        ]);
+
+        // User A mencoba menggeser progres task milik User B
+        $response = $this->actingAs($userA)->patchJson(route('tasks.progress', $taskB->id), [
+            'progress' => 80,
+        ]);
+
+        $response->assertStatus(404);
+        $this->assertEquals(10, $taskB->fresh()->progress);
+    }
 }
 
