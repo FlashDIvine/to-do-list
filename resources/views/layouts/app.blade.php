@@ -14,56 +14,60 @@
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
 
-        /* REASONING UKK: Styling kustom slider metalik/skeuomorphic sesuai referensi UI */
-        .metallic-track-wrapper {
-            background: linear-gradient(180deg, #d8dade 0%, #eceef1 100%);
-            border: 1px solid #c9cdd4;
-            box-shadow: inset 0 1px 1px #ffffff, 0 2px 4px rgba(0,0,0,0.06);
-            border-radius: 9999px;
-            padding: 4px 6px;
-        }
-
-        .metallic-slider {
+        /* REASONING UKK: Slider modern serasi dengan tema Tailwind CSS aplikasi */
+        .modern-progress-slider {
             -webkit-appearance: none;
             appearance: none;
             width: 100%;
-            height: 26px;
-            background: #252830;
+            height: 8px;
+            background: #e2e8f0;
             border-radius: 9999px;
             outline: none;
-            box-shadow: inset 0 3px 6px rgba(0,0,0,0.7), inset 0 1px 2px rgba(0,0,0,0.9), 0 1px 0 rgba(255,255,255,0.7);
             cursor: pointer;
-            position: relative;
+            transition: background 0.2s ease;
         }
 
-        /* Chrome / Metallic Knob Knob Slider */
-        .metallic-slider::-webkit-slider-thumb {
+        .modern-progress-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 28px;
-            height: 28px;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
-            background: radial-gradient(circle at 35% 35%, #ffffff 0%, #e2e8f0 30%, #94a3b8 65%, #475569 90%, #1e293b 100%);
-            box-shadow: 0 3px 6px rgba(0,0,0,0.5), inset 0 1px 2px #ffffff, inset 0 -1px 2px rgba(0,0,0,0.6);
-            border: 2px solid #64748b;
+            background: #ffffff;
+            border: 3px solid #4f46e5;
+            box-shadow: 0 2px 6px rgba(79, 70, 229, 0.35);
             cursor: grab;
-            transition: transform 0.1s ease, box-shadow 0.1s ease;
+            transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
         }
 
-        .metallic-slider:active::-webkit-slider-thumb {
+        .modern-progress-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+            box-shadow: 0 3px 8px rgba(79, 70, 229, 0.45);
+        }
+
+        .modern-progress-slider:active::-webkit-slider-thumb {
             cursor: grabbing;
-            transform: scale(1.08);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.6), inset 0 1px 2px #ffffff;
+            transform: scale(1.25);
+            border-color: #4338ca;
         }
 
-        .metallic-slider::-moz-range-thumb {
-            width: 28px;
-            height: 28px;
+        .modern-progress-slider.is-completed-slider::-webkit-slider-thumb {
+            border-color: #10b981;
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);
+        }
+
+        .modern-progress-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
-            background: radial-gradient(circle at 35% 35%, #ffffff 0%, #e2e8f0 30%, #94a3b8 65%, #475569 90%, #1e293b 100%);
-            box-shadow: 0 3px 6px rgba(0,0,0,0.5), inset 0 1px 2px #ffffff;
-            border: 2px solid #64748b;
+            background: #ffffff;
+            border: 3px solid #4f46e5;
+            box-shadow: 0 2px 6px rgba(79, 70, 229, 0.35);
             cursor: grab;
+        }
+
+        .modern-progress-slider.is-completed-slider::-moz-range-thumb {
+            border-color: #10b981;
         }
     </style>
 </head>

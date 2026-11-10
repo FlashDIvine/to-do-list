@@ -265,31 +265,56 @@
                     </div>
                 </div>
 
-                <!-- REASONING UKK: Slider Progres Metalik Sesuai Gambar (Geser Mentok Kanan = Tugas Selesai) -->
-                <div class="pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <!-- REASONING UKK: Kontrol Progres Modern Serasi dengan Tema Web + Tombol Bulet Presets 25, 50, 75, 100 -->
+                <div class="pt-3 border-t border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3">
                     <div class="flex items-center space-x-2 text-xs">
                         <span class="font-bold text-slate-700">Tingkat Progres:</span>
-                        <span id="progress-badge-{{ $task->id }}" class="font-bold px-2 py-0.5 rounded-md border text-xs {{ $task->is_completed ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-slate-100 text-slate-700 border-slate-200' }}">
+                        <span id="progress-badge-{{ $task->id }}" class="font-extrabold px-2.5 py-1 rounded-lg text-xs transition-colors duration-200 {{ $task->is_completed ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-indigo-50 text-indigo-700 border border-indigo-200' }}">
                             {{ $task->progress ?? ($task->is_completed ? 100 : 0) }}%
                         </span>
-                        <span id="progress-label-{{ $task->id }}" class="text-[11px] font-semibold {{ $task->is_completed ? 'text-emerald-600' : 'text-slate-400' }}">
-                            {{ $task->is_completed ? '✓ Selesai' : 'Geser mentok ke kanan untuk menyelesaikan' }}
+                        <span id="progress-label-{{ $task->id }}" class="text-[11px] font-semibold transition-colors duration-200 {{ $task->is_completed ? 'text-emerald-600' : 'text-slate-400' }}">
+                            {{ $task->is_completed ? '✓ Selesai' : 'Geser mentok ke kanan atau klik 100%' }}
                         </span>
                     </div>
 
-                    <div class="w-full sm:w-72">
-                        <div class="metallic-track-wrapper flex items-center space-x-2">
-                            <span class="text-[10px] font-bold text-slate-500 pl-1 select-none">0%</span>
-                            <div class="flex-1 relative flex items-center">
-                                <input type="range" min="0" max="100" step="1"
-                                    id="slider-{{ $task->id }}"
-                                    value="{{ $task->progress ?? ($task->is_completed ? 100 : 0) }}"
-                                    oninput="onSliderLiveChange({{ $task->id }}, this.value)"
-                                    onchange="onSliderCommit({{ $task->id }}, this.value)"
-                                    class="metallic-slider"
-                                    title="Geser mentok kanan (100%) untuk menyelesaikan tugas">
-                            </div>
-                            <span class="text-[10px] font-bold text-slate-500 pr-1 select-none">100%</span>
+                    <div class="flex items-center space-x-3 w-full md:w-auto">
+                        <!-- Slider Bar Modern Bersih -->
+                        <div class="flex-1 md:w-44 flex items-center">
+                            <input type="range" min="0" max="100" step="1"
+                                id="slider-{{ $task->id }}"
+                                value="{{ $task->progress ?? ($task->is_completed ? 100 : 0) }}"
+                                oninput="onSliderLiveChange({{ $task->id }}, this.value)"
+                                onchange="onSliderCommit({{ $task->id }}, this.value)"
+                                class="modern-progress-slider {{ $task->is_completed ? 'is-completed-slider' : '' }}"
+                                title="Geser mentok kanan (100%) untuk menyelesaikan tugas">
+                        </div>
+
+                        <!-- Tombol Bulet Presets (25, 50, 75, 100) -->
+                        <div class="flex items-center space-x-1.5 flex-shrink-0">
+                            <button type="button" onclick="setTaskProgress({{ $task->id }}, 25)"
+                                id="btn-prog-{{ $task->id }}-25"
+                                class="w-7 h-7 sm:w-8 sm:h-8 rounded-full text-[10px] sm:text-xs font-bold flex items-center justify-center transition-all duration-150 active:scale-90 {{ ($task->progress ?? 0) >= 25 ? 'bg-indigo-600 text-white shadow-sm ring-2 ring-indigo-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200' }}"
+                                title="Pilih progres 25%">
+                                25
+                            </button>
+                            <button type="button" onclick="setTaskProgress({{ $task->id }}, 50)"
+                                id="btn-prog-{{ $task->id }}-50"
+                                class="w-7 h-7 sm:w-8 sm:h-8 rounded-full text-[10px] sm:text-xs font-bold flex items-center justify-center transition-all duration-150 active:scale-90 {{ ($task->progress ?? 0) >= 50 ? 'bg-indigo-600 text-white shadow-sm ring-2 ring-indigo-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200' }}"
+                                title="Pilih progres 50%">
+                                50
+                            </button>
+                            <button type="button" onclick="setTaskProgress({{ $task->id }}, 75)"
+                                id="btn-prog-{{ $task->id }}-75"
+                                class="w-7 h-7 sm:w-8 sm:h-8 rounded-full text-[10px] sm:text-xs font-bold flex items-center justify-center transition-all duration-150 active:scale-90 {{ ($task->progress ?? 0) >= 75 ? 'bg-indigo-600 text-white shadow-sm ring-2 ring-indigo-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200' }}"
+                                title="Pilih progres 75%">
+                                75
+                            </button>
+                            <button type="button" onclick="setTaskProgress({{ $task->id }}, 100)"
+                                id="btn-prog-{{ $task->id }}-100"
+                                class="w-7 h-7 sm:w-8 sm:h-8 rounded-full text-[10px] sm:text-xs font-bold flex items-center justify-center transition-all duration-150 active:scale-90 {{ ($task->is_completed || ($task->progress ?? 0) >= 100) ? 'bg-emerald-600 text-white shadow-md ring-2 ring-emerald-300' : 'bg-slate-100 text-slate-500 hover:bg-emerald-50 hover:text-emerald-700' }}"
+                                title="Set 100% (Selesai)">
+                                100
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -413,6 +438,46 @@
 
 @push('scripts')
 <script>
+    // REASONING UKK: Fungsi klik instan tombol bulet (25, 50, 75, 100)
+    function setTaskProgress(taskId, value) {
+        const slider = document.getElementById(`slider-${taskId}`);
+        if (slider) {
+            slider.value = value;
+        }
+        onSliderLiveChange(taskId, value);
+        onSliderCommit(taskId, value);
+    }
+
+    // REASONING UKK: Perbarui warna aktif pada 4 tombol bulet progres (25, 50, 75, 100)
+    function updateBulletButtons(taskId, val) {
+        const p = parseInt(val);
+        const b25 = document.getElementById(`btn-prog-${taskId}-25`);
+        const b50 = document.getElementById(`btn-prog-${taskId}-50`);
+        const b75 = document.getElementById(`btn-prog-${taskId}-75`);
+        const b100 = document.getElementById(`btn-prog-${taskId}-100`);
+
+        if (b25) {
+            b25.className = p >= 25 
+                ? "w-7 h-7 sm:w-8 sm:h-8 rounded-full text-[10px] sm:text-xs font-bold flex items-center justify-center transition-all duration-150 active:scale-90 bg-indigo-600 text-white shadow-sm ring-2 ring-indigo-200"
+                : "w-7 h-7 sm:w-8 sm:h-8 rounded-full text-[10px] sm:text-xs font-bold flex items-center justify-center transition-all duration-150 active:scale-90 bg-slate-100 text-slate-500 hover:bg-slate-200";
+        }
+        if (b50) {
+            b50.className = p >= 50 
+                ? "w-7 h-7 sm:w-8 sm:h-8 rounded-full text-[10px] sm:text-xs font-bold flex items-center justify-center transition-all duration-150 active:scale-90 bg-indigo-600 text-white shadow-sm ring-2 ring-indigo-200"
+                : "w-7 h-7 sm:w-8 sm:h-8 rounded-full text-[10px] sm:text-xs font-bold flex items-center justify-center transition-all duration-150 active:scale-90 bg-slate-100 text-slate-500 hover:bg-slate-200";
+        }
+        if (b75) {
+            b75.className = p >= 75 
+                ? "w-7 h-7 sm:w-8 sm:h-8 rounded-full text-[10px] sm:text-xs font-bold flex items-center justify-center transition-all duration-150 active:scale-90 bg-indigo-600 text-white shadow-sm ring-2 ring-indigo-200"
+                : "w-7 h-7 sm:w-8 sm:h-8 rounded-full text-[10px] sm:text-xs font-bold flex items-center justify-center transition-all duration-150 active:scale-90 bg-slate-100 text-slate-500 hover:bg-slate-200";
+        }
+        if (b100) {
+            b100.className = p >= 100 
+                ? "w-7 h-7 sm:w-8 sm:h-8 rounded-full text-[10px] sm:text-xs font-bold flex items-center justify-center transition-all duration-150 active:scale-90 bg-emerald-600 text-white shadow-md ring-2 ring-emerald-300"
+                : "w-7 h-7 sm:w-8 sm:h-8 rounded-full text-[10px] sm:text-xs font-bold flex items-center justify-center transition-all duration-150 active:scale-90 bg-slate-100 text-slate-500 hover:bg-emerald-50 hover:text-emerald-700";
+        }
+    }
+
     // REASONING UKK: Live feedback visual saat slider progres digeser (tanpa menunggu request database)
     function onSliderLiveChange(taskId, value) {
         const badge = document.getElementById(`progress-badge-${taskId}`);
@@ -421,12 +486,22 @@
         const desc = document.getElementById(`task-desc-${taskId}`);
         const checkbox = document.getElementById(`checkbox-${taskId}`);
         const card = document.getElementById(`task-card-${taskId}`);
+        const slider = document.getElementById(`slider-${taskId}`);
 
         if (badge) badge.innerText = `${value}%`;
 
+        // Update warna isi garis track slider
+        if (slider) {
+            const activeColor = parseInt(value) >= 100 ? '#10b981' : '#4f46e5';
+            slider.style.background = `linear-gradient(to right, ${activeColor} 0%, ${activeColor} ${value}%, #e2e8f0 ${value}%, #e2e8f0 100%)`;
+        }
+
+        // Perbarui tombol bulet preset
+        updateBulletButtons(taskId, value);
+
         // REASONING UKK: Mentok kanan (100%) otomatis mengaktifkan status selesai (line-through dan badge hijau)
         if (parseInt(value) >= 100) {
-            if (badge) badge.className = "font-bold px-2 py-0.5 rounded-md border text-xs bg-emerald-100 text-emerald-800 border-emerald-300";
+            if (badge) badge.className = "font-extrabold px-2.5 py-1 rounded-lg text-xs bg-emerald-100 text-emerald-800 border border-emerald-300";
             if (label) {
                 label.className = "text-[11px] font-semibold text-emerald-600";
                 label.innerText = "✓ Selesai";
@@ -434,19 +509,21 @@
             if (title) title.className = "text-base line-through text-slate-400 font-medium truncate";
             if (desc) desc.className = "text-xs line-through text-slate-300 mt-1 line-clamp-2";
             if (checkbox) checkbox.checked = true;
+            if (slider) slider.classList.add('is-completed-slider');
             if (card) {
                 card.classList.remove('hover:border-indigo-200');
                 card.classList.add('bg-slate-50/50');
             }
         } else {
-            if (badge) badge.className = "font-bold px-2 py-0.5 rounded-md border text-xs bg-slate-100 text-slate-700 border-slate-200";
+            if (badge) badge.className = "font-extrabold px-2.5 py-1 rounded-lg text-xs bg-indigo-50 text-indigo-700 border border-indigo-200";
             if (label) {
                 label.className = "text-[11px] font-semibold text-slate-400";
-                label.innerText = "Geser mentok ke kanan untuk menyelesaikan";
+                label.innerText = "Geser mentok ke kanan atau klik 100%";
             }
             if (title) title.className = "text-base text-slate-800 font-bold truncate";
             if (desc) desc.className = "text-xs text-slate-500 mt-1 line-clamp-2";
             if (checkbox) checkbox.checked = false;
+            if (slider) slider.classList.remove('is-completed-slider');
             if (card) {
                 card.classList.remove('bg-slate-50/50');
                 card.classList.add('hover:border-indigo-200');
@@ -482,7 +559,7 @@
     function recalculateCounters() {
         let completed = 0;
         let pending = 0;
-        const sliders = document.querySelectorAll('.metallic-slider');
+        const sliders = document.querySelectorAll('.modern-progress-slider');
 
         sliders.forEach(slider => {
             if (parseInt(slider.value) >= 100) {
@@ -497,6 +574,15 @@
         if (statComp) statComp.innerText = `Selesai: ${completed}`;
         if (statPend) statPend.innerText = `Tertunda: ${pending}`;
     }
+
+    // Inisialisasi tampilan garis terisi saat dokumen pertama kali dimuat
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.modern-progress-slider').forEach(slider => {
+            const val = parseInt(slider.value) || 0;
+            const color = val >= 100 ? '#10b981' : '#4f46e5';
+            slider.style.background = `linear-gradient(to right, ${color} 0%, ${color} ${val}%, #e2e8f0 ${val}%, #e2e8f0 100%)`;
+        });
+    });
 
     // REASONING UKK: Fungsi JavaScript murni tanpa dependency untuk mengisi value ke dalam modal edit
     function openEditModal(task) {
