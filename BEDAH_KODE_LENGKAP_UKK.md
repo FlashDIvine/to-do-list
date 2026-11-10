@@ -479,3 +479,4 @@ Gunakan tabel ini sebagai kamus hafalan saat penguji menguji istilah-istilah tek
 
 ### 🎓 PESAN MENTAL UNTUK HARI UJIAN:
 > *"Uji Kompetensi Keahlian bukanlah tentang menghafal jutaan baris kode di luar kepala, melainkan tentang **memahami mengapa baris kode itu ada di sana** dan **bagaimana kamu melindungi data pengguna**. Percaya diri, jelaskan dengan tenang menggunakan alur logika dan analogi di atas, dan buktikan bahwa kamu adalah calon Software Engineer masa depan yang kompeten!"* **Selamat Berjuang & Sukses UKK!** 🚀
+
