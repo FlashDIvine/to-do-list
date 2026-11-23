@@ -21,10 +21,10 @@ class DatabaseSeeder extends Seeder
 
         // REASONING UKK: Akun demo bawaan agar saat pengujian live coding, peserta tidak perlu repot registrasi manual
         $user = User::firstOrCreate(
-            ['email' => 'peserta@ukk.sch.id'],
+            ['email' => 'enakissei@gmail.com'],
             [
-                'name' => 'Peserta UKK RPL',
-                'password' => Hash::make('password123'),
+                'name' => 'Najibbbb',
+                'password' => Hash::make('123456'),
             ]
         );
 
