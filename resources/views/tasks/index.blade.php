@@ -85,7 +85,7 @@
                     <label for="due_date" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
                         Tenggat Waktu (Opsional)
                     </label>
-                    <input type="date" name="due_date" id="due_date" value="{{ old('due_date') }}" 
+                    <input type="date" name="due_date" id="due_date" value="{{ old('due_date') }}" min="{{ date('Y-m-d') }}"
                         class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm bg-white text-slate-700">
                 </div>
 
